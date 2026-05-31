@@ -1,7 +1,5 @@
 # RetailPulse — Supply Chain & Retail Analytics
 
-## Status: In Progress 🔄
-
 ## Business Problem
 GlobalMart is losing ₹7 crore monthly from simultaneous
 14% stockout and 22% overstock rates. This project analyses
