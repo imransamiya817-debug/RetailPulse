@@ -3,13 +3,13 @@
    ================================================================= */
 -- Step 1: Create the database
 -- (Skip if RetailPulseDB already exists)
-IF NOT EXISTS(SELECT name FROM sys.databases WHERE name = 'RetailpulseDB')
+IF NOT EXISTS(SELECT name FROM sys.databases WHERE name = 'RetailPulseDB')
 BEGIN
-	CREATE DATABASE RetailpulseDB;
-	PRINT 'Database RetailpulseDB Created ';
+	CREATE DATABASE RetailPulseDB;
+	PRINT 'Database RetailPulseDB Created ';
 END
 GO
-USE RetailpulseDB;
+USE RetailPulseDB;
 GO
 
 /* =============================================
@@ -145,7 +145,7 @@ CREATE TABLE fact_orders (
     profit_margin_pct DECIMAL(8,2) NULL,         -- NULL for Olist
     shipping_mode VARCHAR(50) NULL,         -- NULL for ML and Olist
     market VARCHAR(100) NULL,
-    late_delivery_risk INT NULL,         -- 0 or 1, DataCo only
+    late_delivery_risk Decimal(10,2)NULL,         -- 0 or 1, DataCo only
     source_dataset VARCHAR(10) NOT NULL      -- 'ML', 'DataCo', 'Olist'
 );
 
@@ -209,7 +209,7 @@ CREATE TABLE fact_payments (
 ALTER TABLE fact_orders
 ADD CONSTRAINT fk_orders_product
 FOREIGN KEY (product_id) REFERENCES dim_product(product_id);
- 
+
 -- FK 2: fact_orders.customer_id → dim_customer.customer_id
 ALTER TABLE fact_orders
 ADD CONSTRAINT fk_orders_customer
@@ -241,6 +241,7 @@ WITH (FORMAT = 'CSV', FIRSTROW = 2);
 BULK INSERT dim_employee
 FROM 'C:\Users\Admin\Desktop\RetailPulse\clean\dim_employee.csv'
 WITH (FORMAT = 'CSV', FIRSTROW = 2);
+SELECT * FROM fact_orders
 
 BULK INSERT dim_seller
 FROM 'C:\Users\Admin\Desktop\RetailPulse\clean\dim_seller.csv'
@@ -283,7 +284,7 @@ SELECT o.source_dataset,o.order_year,
 FROM fact_orders o
 GROUP BY o.source_dataset,o.order_year,
        o.order_quarter,o.market;
-       
+
 -- VIEW 2: vw_product_performance
 -- For  : Warehouse Manager — SKU-level health
 -- Shows: Revenue, margin, order count per product per category
@@ -385,6 +386,7 @@ LEFT JOIN fact_orders o
 on w.warehouse_id = o.warehouse_id
 GROUP BY w.warehouse_id,w.warehouse_name,
        w.city,w.region,w.country;
+
 /*---------------------------------------------------------------------
    SECTION 4 — BASIC KPI QUERIES
    Run each query individually in SSMS.
@@ -430,7 +432,7 @@ SELECT source_dataset,
 FROM fact_delivery
 GROUP BY source_dataset
 ORDER BY late_rate_pct DESC; 
-SELECT * FROM fact_delivery
+
 -- Q4: Revenue by Product Category
 -- Answers: Which categories drive the most value?
 -- Stakeholder: Warehouse Manager — where to focus inventory efforts
@@ -470,8 +472,6 @@ SELECT review_score, sentiment_label,
 FROM fact_reviews
 GROUP BY review_score, sentiment_label
 ORDER BY review_score;
-select * from fact_reviews;
-
 
 /*----------------------------------------------------------------
    SECTION 5 — INTERMEDIATE ANALYSIS
@@ -585,22 +585,20 @@ GROUP BY payment_type
 ORDER BY transaction_count DESC;
 
 -- Q13: Orders that never got fulfilled (no product assigned)
-SELECT 
-    order_status,
-    COUNT(*) AS order_count
+SELECT order_status,
+       COUNT(*) AS order_count
 FROM fact_orders
 WHERE source_dataset = 'Olist'
-  AND product_id IS NULL
+      AND product_id IS NULL
 GROUP BY order_status
 ORDER BY order_count DESC;
-
 
 /* ----------------------------------------------------------------
    SECTION 6 — ADVANCED SQL
    Window functions, CTEs, running totals, rankings.
    ---------------------------------------------------------------- */
 
--- Q13: ABC Classification — Revenue Concentration
+-- Q14: ABC Classification — Revenue Concentration
 -- Business use: Identified A-class products (top 70% revenue)
 --               so inventory teams can prioritise them for stockout prevention
 -- SQL skills  : CTE + window function (SUM OVER + cumulative %)
@@ -632,7 +630,7 @@ SELECT category, source_dataset, total_revenue, revenue_rank, cumulative_pct,
 FROM cumulative
 ORDER BY source_dataset, revenue_rank;
 
--- Q14: Month-over-Month Revenue Growth
+-- Q15: Month-over-Month Revenue Growth
 -- Business use: Is revenue growing? When did the DataCo drop happen?
 -- SQL skills : CTE + LAG window function for previous period comparison
 WITH monthly_revenue AS(
@@ -654,7 +652,7 @@ SELECT source_dataset, order_year, order_month,monthly_revenue,
 From monthly_revenue
 ORDER BY source_dataset, order_year, order_month;
 
--- Q15: Delivery Delay Ranking by Market
+-- Q16: Delivery Delay Ranking by Market
 -- Business use: Which markets have the worst delivery experience?
 -- SQL skills  : RANK()
 SELECT o.market, o.source_dataset,
@@ -670,7 +668,7 @@ ON o.order_id = d.order_id
 GROUP BY o.market, o.source_dataset
 ORDER BY late_rate_rank;
 
--- Q16: Running Total Revenue — DataCo
+-- Q17: Running Total Revenue — DataCo
 -- Business use: Cumulative revenue to track annual targets
 -- SQL skills  : SUM OVER with ORDER BY (running total)
 SELECT order_year,order_month,
@@ -685,7 +683,7 @@ WHERE source_dataset = 'Dataco'
 GROUP BY order_year,order_month
 ORDER BY order_year,order_month; 
 
--- Q17: Top 10 Customers by Revenue (DataCo)
+-- Q18: Top 10 Customers by Revenue (DataCo)
 -- Business use: Who are our most valuable customers?
 -- SQL skills  : JOIN + TOP + RANK window function
 SELECT c.customer_name, c.city, c.state, c.customer_segment,
@@ -702,10 +700,10 @@ WHERE o.source_dataset = 'DataCo'
 GROUP BY c.customer_name, c.city, c.state, c.customer_segment
 ORDER BY total_revenue DESC;
 
--- Q18: Review Score vs Delivery Performance (Correlation)
+-- Q19: Review Score vs Delivery Performance (Correlation)
 -- Business use: Do late deliveries cause bad reviews?
--- Insight     : This links fact_orders + fact_delivery + fact_reviews
--- SQL skills  : 3-table JOIN with conditional aggregation
+-- Insight : This links fact_orders + fact_delivery + fact_reviews
+-- SQL skills : 3-table JOIN with conditional aggregation
 SELECT d.is_late,
        CASE
            WHEN d.is_late = 1 THEN 'Late Delivery'
@@ -727,12 +725,12 @@ WHERE d.source_dataset = 'Olist'
 GROUP BY d.is_late
 ORDER BY d.is_late DESC;
 
--- Q19: Seller Performance Scorecard (Olist)
+-- Q20: Seller Performance Scorecard (Olist)
 -- Business use: Which sellers drive the most revenue and satisfaction?
 -- Stakeholder : Procurement team — seller relationship management
 -- SQL skills  : Multi-table JOIN across 3 tables
 
-SELECT TOP 20 s.seller_id, s.seller_city, s.seller_state
+SELECT TOP 20 s.seller_id, s.seller_city, s.seller_state,
        COUNT(DISTINCT o.order_id) AS total_orders,
        ROUND(SUM(o.revenue), 0) AS total_revenue,
        ROUND(AVG(r.review_score) ,2) AS avg_review_score,
@@ -937,4 +935,10 @@ PRINT ' Views     : 6 (for Tableau)';
 PRINT ' Queries   : 19 analysis queries';
 PRINT ' Checks    : 6 data quality checks';
 PRINT '========================================';
+
+
+
+
+
+
 
