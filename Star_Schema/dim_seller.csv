@@ -1,4 +1,4 @@
-seller_id,zip_code,seller_city,seller_state,geolocation_lat,geolocation_lng
+seller_id,zip_code,seller_city,seller_state,seller_lat,seller_lng
 3442f8959a84dea7ee197c632cb2df15,13023,campinas,SP,-22.89384803253408,-47.06133702244195
 d1b65fc7debc3361ea86b5f14c68d2e2,13844,mogi guacu,SP,-22.38343651404282,-46.947926542619655
 ce3ad9de960102d0677a81f5d0bb7b2d,20031,rio de janeiro,RJ,-22.909572437655488,-43.177703112986904
