@@ -56,19 +56,19 @@ End-to-end supply chain analytics project analysing **294,344 order records** ac
 
 ### Dashboard 1 — Executive KPI Dashboard
 **Stakeholder: VP of Supply Chain**
-![Dashboard 1](tableau/screenshots/dashboard1_executive.png)
+![Dashboard 1](tableau/Screenshots/dashboard1_executive.png)
 
 ### Dashboard 2 — Delivery Performance
 **Stakeholder: Procurement Team**
-![Dashboard 2](tableau/screenshots/dashboard2_delivery.png)
+![Dashboard 2](tableau/Screenshots/dashboard2_delivery.png)
 
 ### Dashboard 3 — Product & Warehouse Analysis
 **Stakeholder: Warehouse Operations Manager**
-![Dashboard 3](tableau/screenshots/dashboard3_products.png)
+![Dashboard 3](tableau/Screenshots/dashboard3_products.png)
 
 ### Dashboard 4 — Customer & Payment Insights
 **Stakeholder: Finance Team**
-![Dashboard 4](tableau/screenshots/dashboard4_customer.png)
+![Dashboard 4](tableau/Screenshots/dashboard4_customer.png)
 
 ---
 
